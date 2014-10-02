@@ -2,7 +2,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "ResourceMenager.h"
+#include "../include/ResourceMenager.h"
 
 ResourceMenager::ResourceMenager() : m_textures(), m_resource_directories()
 {
