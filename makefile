@@ -7,7 +7,7 @@ CC = g++
 COMMANDLINE_OPTIONS = /dev/ttyS0
 
 # Compiler options during compilation
-COMPILE_OPTIONS = -pedantic -Wall
+COMPILE_OPTIONS = -pedantic -Wall -std=c++11
 
 #Header include directories
 HEADERS = include
