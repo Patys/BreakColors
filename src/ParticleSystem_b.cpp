@@ -1,4 +1,4 @@
-#include "ParticleSystem_b.h"
+#include "../include/ParticleSystem_b.h"
 #include <math.h>
 
 using namespace ParticleSystem_b;
