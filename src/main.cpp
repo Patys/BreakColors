@@ -5,9 +5,9 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "ResourceMenager.h"
-#include "ParticleSystem_b.h"
-#include "maps.hpp"
+#include "../include/ResourceMenager.h"
+#include "../include/ParticleSystem_b.h"
+#include "../include/maps.hpp"
 
 
 /**< sprawdzanie kolizji AABB */
