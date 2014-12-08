@@ -19,11 +19,13 @@ void Ball::update()
       pos.y += abs(vel.y) * 2;
       vel.y =- vel.y;
     }
-  if(pos.y + vel.y > 600 - size.y)
-    {
-      pos.y -= abs(vel.y) * 2;
-      vel.y =- vel.y;
-    }
+
+  // HACK: bottom is update outside
+  //if(pos.y + vel.y > 600 - size.y)
+  //  {
+  //    pos.y -= abs(vel.y) * 2;
+  //    vel.y =- vel.y;
+  //  }
 
   // max velocity
   if(vel.y > 6)
