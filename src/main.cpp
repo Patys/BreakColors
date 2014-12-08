@@ -170,8 +170,6 @@ int main()
   std::vector<BONUS> bonuses;
   std::vector<ROCKET> rockets;
   std::vector<Ball> balls;
-  balls.push_back(Ball(sf::Vector2f(300,500),sf::Vector2f(5,-5),sf::Vector2f(32,32)));
-
 
   /*
     for(int x = 0; x < 15; x++)
@@ -347,12 +345,10 @@ int main()
 			     pos_desk.x + delta_desk.x, pos_desk.y,
 			     size_desk.x, size_desk.y))
                 {
-		  float temp_add_vel = 1.2f;
-
 		  balls[x].setVelocity(sf::Vector2f(balls[x].getVelocity().x,
 						    -balls[x].getVelocity().y));
 		  balls[x].setPosition(sf::Vector2f(balls[x].getPosition().x,
-						    balls[x].getPosition().y + balls[x].getVelocity().y));
+						    balls[x].getPosition().y + balls[x].getVelocity().y * 2));
                 }
 	      // collision with bottom
 	      if(balls[x].getPosition().y > 600 - 36)
