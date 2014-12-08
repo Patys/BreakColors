@@ -55,16 +55,6 @@ void Ball::setParticleTexture(const sf::Texture &tex)
   sprite_particle.setTexture(tex);
 }
 
-sf::Vector2f Ball::getPosition()
-{
-  return pos;
-}
-
-sf::Vector2f Ball::getVelocity()
-{
-  return vel;
-}
-
 void Ball::draw(sf::RenderWindow *window)
 {
   for(int i = 0; i < particles_emitter.getNumberOfParticles(); i++)
