@@ -12,14 +12,18 @@ class Ball
 
   void update();
 
-  sf::Vector2f getPosition();
-  sf::Vector2f getVelocity();
-
+  const sf::Vector2f getPosition() { return pos; }
   void setPosition(sf::Vector2f _pos) { pos = _pos; }
+
+  const sf::Vector2f getVelocity() { return vel; }
   void setVelocity(sf::Vector2f _vel) { vel = _vel; }
+
+  const sf::Vector2f getSize() { return size; }
+  void setSize(sf::Vector2f _size) { size = _size; }
 
   void setTexture(const sf::Texture &tex);
   void setParticleTexture(const sf::Texture &tex);
+
 
   void draw(sf::RenderWindow *window);
  private:
