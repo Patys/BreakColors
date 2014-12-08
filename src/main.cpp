@@ -20,6 +20,15 @@ bool isCollision(float x1, float y1, float w1, float h1,
   return( false );
 }
 
+bool isCollision(sf::Vector2f pos, sf::Vector2f size,
+                 sf::Vector2f pos2, sf::Vector2f size2 )
+{
+  if( pos.x + size.x >= pos2.x && pos.x <= pos2.x + size2.x &&
+      pos.y + size.y >= pos2.y && pos.y <= pos2.y + size2.y )
+    return( true );
+  return( false );
+}
+
 /**< struktura zaiwerajaca informacje o klockach */
 struct BLOCK
 {
@@ -184,7 +193,6 @@ int main()
   /**< states of levels */
   bool state_game = false; // false - menu, true - game
   bool draw_credits = false;
-  int level = 0;
   bool first_run = true;
 
   while (window.isOpen())
@@ -215,7 +223,10 @@ int main()
                 case sf::Mouse::Left:
 		  if(state_game == true && has_rocket == true)
                     {
-		      rockets.push_back(ROCKET(sf::Vector2f(pos_desk.x + size_desk.x / 2 - 16, pos_desk.y + size_desk.y / 2 - 32), sf::Vector2f(0,-5), sf::Vector2f(32,64)));
+		      sf::Vector2f pos_rocket = sf::Vector2f(pos_desk.x + size_desk.x / 2 - 16,
+							     pos_desk.y + size_desk.y / 2 - 32);
+		      ROCKET rocket(pos_rocket, sf::Vector2f(0,-5), sf::Vector2f(32,64));
+		      rockets.push_back(rocket);
 		      has_rocket = false;
                     }
 		  break;
@@ -225,62 +236,33 @@ int main()
             }
 
         }
-      /**< play */
+      // TODO: state_game to enum
+      // PLAY
       if(state_game == true)
         {
 	  window.setMouseCursorVisible(false);
-	  /**< if have not any blocks */
 	  if(blocks.empty())
             {
-	      /**< go to next level */
-	      level++;
-	      /**< first level load from: maps.hpp */
-	      // TODO: fuck off this loading
-	      if(level == 1)
-                {
-		  /**< size map: 13x5 */
-		  for(int x = 0; x < 13; x++)
-                    {
-		      for(int y = 0; y < 5; y++)
-                        {
-			  if(map_two[y][x] == 1)
-			    blocks.push_back(BLOCK(x * 48 + 80, y * 48 + 80, 32, 32, 0));
-			  if(map_two[y][x] == 2)
-			    blocks.push_back(BLOCK(x * 48 + 80, y * 48 + 80, 32, 32, 1));
-			  if(map_two[y][x] == 3)
-			    blocks.push_back(BLOCK(x * 48 + 80, y * 48 + 80, 32, 32, 2));
-                        }
-                    }
-		  /**< remove all balls and add new */
-		  balls.clear();
-		  balls.push_back(Ball(sf::Vector2f(pos_desk.x + 32, pos_desk.y - 32), sf::Vector2f(5,-5),sf::Vector2f(32,32)));
-		  balls.back().setTexture(tex_manager.getTexture("data/ball.png"));
-		  balls.back().setParticleTexture(tex_manager.getTexture("data/star1.png"));
-
-                }
-	      /**< another generate randomize */
-	      else if(level >= 2)
-                {
-		  /**< size map: 13x5 */
-		  for(int x = 0; x < 13; x++)
-                    {
-		      for(int y = 0; y < 5; y++)
-                        {
-			  blocks.push_back(BLOCK(x * 48 + 80, y * 48 + 80, 32, 32, rand()%3));
-                        }
-                    }
-		  /**< remove all balls and add new */
-		  balls.clear();
-		  balls.push_back(Ball(sf::Vector2f(pos_desk.x + 32, pos_desk.y - 32), sf::Vector2f(5,-5),sf::Vector2f(32,32)));
-		  balls.back().setTexture(tex_manager.getTexture("data/ball.png"));
-		  balls.back().setParticleTexture(tex_manager.getTexture("data/star1.png"));
-                }
+	      // create new map
+	      // map size 13x5
+	      for(int x = 0; x < 13; x++)
+		{
+		  for(int y = 0; y < 5; y++)
+		    {
+		      blocks.push_back(BLOCK(x * 48 + 80, y * 48 + 80, 32, 32, rand()%3));
+		    }
+		}
+	      balls.clear();
+	      balls.push_back(Ball(sf::Vector2f(pos_desk.x + 32, pos_desk.y - 32), sf::Vector2f(5,-5),sf::Vector2f(32,32)));
+	      balls.back().setTexture(tex_manager.getTexture("data/ball.png"));
+	      balls.back().setParticleTexture(tex_manager.getTexture("data/star1.png"));
+                
             }
 
-	  /**< if have not any lives, go to menu */
 	  if(lives < 0)
 	    state_game = false;
 
+	  // TODO: improve controlling
 	  /**< controlling desk */
 	  if(sf::Mouse::getPosition(window).x < 396)
             {
@@ -302,7 +284,6 @@ int main()
 	  else if(delta_desk.x < -16)
 	    delta_desk.x = -16;
 
-	  /**< leave area of game */
 	  if(pos_desk.x + delta_desk.x < 0)
             {
 	      //delta_desk.x = -delta_desk.x * 0.3;
@@ -310,50 +291,58 @@ int main()
 	      pos_desk.x = 0;
 
             }
-	  if(pos_desk.x + delta_desk.x > 800 - size_desk.x)
+	  else if(pos_desk.x + delta_desk.x > 800 - size_desk.x)
             {
 	      //delta_desk.x = -delta_desk.x * 0.3;
 	      delta_desk.x = 0;
 	      pos_desk.x = 800-size_desk.x;
             }
 
-	  /**< balls updating */
+	  // BALLS UPDATE
 	  for(size_t x = 0; x < balls.size(); x++)
 	    {
 	      balls[x].update();
 	      
-	      // collsion with desk
-	      //TODO: Ball getSize()
-	      if(isCollision(balls[x].getPosition().x, balls[x].getPosition().y,
-			     32, 32, // here need Ball getSize()
-			     pos_desk.x + delta_desk.x, pos_desk.y,
-			     size_desk.x, size_desk.y))
+	      bool collision_with_desk = isCollision(balls[x].getPosition(),
+						     balls[x].getSize(),
+						     sf::Vector2f(pos_desk.x + delta_desk.x, pos_desk.y),
+						     sf::Vector2f(size_desk.x, size_desk.y));
+
+	      if(collision_with_desk)
                 {
 		  balls[x].setVelocity(sf::Vector2f(balls[x].getVelocity().x,
 						    -balls[x].getVelocity().y));
-		  balls[x].setPosition(sf::Vector2f(balls[x].getPosition().x,
-						    balls[x].getPosition().y + balls[x].getVelocity().y * 2));
+
+		  sf::Vector2f last_position = sf::Vector2f(balls[x].getPosition().x,
+							    pos_desk.y - 33);
+		  balls[x].setPosition(last_position);
                 }
-	      // collision with bottom
-	      if(balls[x].getPosition().y > 600 - 36)
+	      if(balls[x].getPosition().y > 600 - balls[x].getSize().x)
                 {
 		  if(balls.size() <= 1)
 		    lives--;
 		  if(balls.size() > 1)
 		    balls.erase(balls.begin() + x);
+		  else
+		    balls[x].setPosition(sf::Vector2f(pos_desk.x, pos_desk.y));
                 }
 
             }
 
-	  /**< blocks update */
+	  // UPDATE BLOCKS
 	  for(size_t x = 0; x < blocks.size(); x++)
             {
 	      for(size_t i = 0; i < balls.size(); i++)
                 {
 		  /**< collision with balls */
-		  if(isCollision(balls[i].getPosition().x, balls[i].getPosition().y,
-				 32, 32, //TODO: Ball getSize()
-				 blocks[x].x, blocks[x].y, blocks[x].wx, blocks[x].hy))
+		  sf::Vector2f block_pos = sf::Vector2f(blocks[x].x, blocks[x].y);
+		  sf::Vector2f block_size = sf::Vector2f(blocks[x].wx, blocks[x].hy);
+		  // TODO: better block
+		  bool collision_with_ball = isCollision(balls[i].getPosition(),
+							 balls[i].getSize(),
+							 block_pos,
+							 block_size);
+		  if(collision_with_ball)
                     {
 		      // TODO: check and optymalise
 		      if(balls[i].getPosition().x + 32 < blocks[x].x)
@@ -372,8 +361,10 @@ int main()
 		      // add bonus
 		      if(rand()%100 + 1 < rand_bonus)
                         {
-			  bonuses.push_back(BONUS(sf::Vector2f(blocks[x].x,blocks[x].y), sf::Vector2f(0,4),
-						  sf::Vector2f(32,32),rand()%6+1));
+			  sf::Vector2f bonus_pos = sf::Vector2f(blocks[x].x,blocks[x].y);
+			  BONUS bonus(bonus_pos, sf::Vector2f(0,4),
+				      sf::Vector2f(32,32), rand()%6+1);
+			  bonuses.push_back(bonus);
                         }
 
 		      blocks.erase(blocks.begin()+x);
@@ -399,9 +390,11 @@ int main()
 	      if(bonuses[x].pos.y < 0)
 		bonuses.erase(bonuses.begin()+x);
 	      /**< collision with desk */
-	      if(isCollision(bonuses[x].pos.x, bonuses[x].pos.y, bonuses[x].size_spr.x, bonuses[x].size_spr.y,
-			     pos_desk.x + delta_desk.x, pos_desk.y,
-			     size_desk.x, size_desk.y))
+	      bool collision_with_desk = isCollision(bonuses[x].pos,
+						     bonuses[x].size_spr,
+						     sf::Vector2f(pos_desk.x + delta_desk.x, pos_desk.y),
+						     sf::Vector2f(size_desk.x, size_desk.y));
+	      if(collision_with_desk)
                 {
 		  /**< apply bonus */
 		  if(bonuses[x].type == 1)
@@ -622,10 +615,12 @@ int main()
 
 	  /**< check click on start/restart */
 	  sf::FloatRect text_restart_rect = menu_restart.getLocalBounds();
-	  if(sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-	     isCollision(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y,1,1,
-			 menu_restart.getPosition().x, menu_restart.getPosition().y,
-			 text_restart_rect.width, text_restart_rect.height))
+	  sf::Vector2f text_restart_size = sf::Vector2f(text_restart_rect.width, text_restart_rect.height);
+	  bool collision_with_restart = isCollision((sf::Vector2f)sf::Mouse::getPosition(window),
+						    sf::Vector2f(1,1),
+						    menu_restart.getPosition(),
+						    text_restart_size);
+	  if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && collision_with_restart)
             {
 	      /**< generating new game */
 	      first_run = false;
@@ -664,10 +659,12 @@ int main()
 	  if(!first_run && lives >= 0)
             {
 	      sf::FloatRect text_resume_rect = menu_resume.getLocalBounds();
-	      if(sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-		 isCollision(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y,1,1,
-			     menu_resume.getPosition().x, menu_resume.getPosition().y,
-			     text_resume_rect.width, text_resume_rect.height))
+	      sf::Vector2f text_resume_size = sf::Vector2f(text_resume_rect.width, text_resume_rect.height);
+	      bool mouse_under_resume = isCollision((sf::Vector2f)sf::Mouse::getPosition(window),
+						    sf::Vector2f(1,1),
+						    menu_resume.getPosition(),
+						    text_resume_size);
+	      if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouse_under_resume)
                 {
 		  state_game = true;
 		  draw_credits = false;
@@ -676,19 +673,23 @@ int main()
 
 	  /**< exit */
 	  sf::FloatRect text_exit_rect = menu_exit.getLocalBounds();
-	  if(sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-	     isCollision(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y,1,1,
-			 menu_exit.getPosition().x, menu_exit.getPosition().y,
-			 text_exit_rect.width, text_exit_rect.height))
+	  sf::Vector2f text_exit_size = sf::Vector2f(text_exit_rect.width, text_exit_rect.height);
+	  bool mouse_under_exit = isCollision((sf::Vector2f)sf::Mouse::getPosition(window),
+					      sf::Vector2f(1,1),
+					      menu_exit.getPosition(),
+					      text_exit_size);
+	  if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouse_under_exit)
             {
 	      window.close();
             }
 	  /**< credits */
 	  sf::FloatRect text_credits_rect = menu_credits.getLocalBounds();
-	  if(sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-	     isCollision(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y,1,1,
-			 menu_credits.getPosition().x, menu_credits.getPosition().y,
-			 text_credits_rect.width, text_credits_rect.height))
+	  sf::Vector2f text_credits_size = sf::Vector2f(text_credits_rect.width, text_credits_rect.height);
+	  bool mouse_under_credits = isCollision((sf::Vector2f)sf::Mouse::getPosition(window),
+						 sf::Vector2f(1,1),
+						 menu_credits.getPosition(),
+						 text_credits_size);
+	  if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouse_under_credits)
             {
 	      draw_credits = true;
             }
