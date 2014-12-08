@@ -10,7 +10,7 @@ COMMANDLINE_OPTIONS = /dev/ttyS0
 COMPILE_OPTIONS = -pedantic -Wall -std=c++11
 
 #Header include directories
-HEADERS = include
+HEADERS = -I"include"
 #Libraries for linking
 LIBS = -lsfml-system -lsfml-window -lsfml-graphics
 
