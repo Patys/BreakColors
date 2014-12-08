@@ -30,22 +30,6 @@ struct BLOCK
   int type;
 };
 
-
-/**< struktura zawierajaca informacje o pilce */
-struct BALL
-{
-  BALL(sf::Vector2f _pos, sf::Vector2f _vel, sf::Vector2f _size):
-    pos(_pos), vel(_vel), size_ball(_size), particle_emitter(50)
-  {
-
-  }
-  sf::Vector2f pos;
-  sf::Vector2f vel;
-  sf::Vector2f size_ball;
-  ParticleSystem_b::Emitter particle_emitter;
-};
-
-
 /**< struktura zawierajaca informacje o bonusach */
 struct BONUS
 {
